@@ -6,6 +6,9 @@ class App(tb.Window):
     def __init__(self, theme, color):
         super().__init__(themename=theme)
 
+        global WIDTHSCREEN
+        global HEIGHTSCREEN
+
         WIDTHSCREEN = self.winfo_screenwidth()
         HEIGHTSCREEN = self.winfo_screenheight()
 
@@ -13,7 +16,7 @@ class App(tb.Window):
         self.attributes('-fullscreen', True)
         self.attributes('-transparentcolor', self.bg)
 
-        self.presentation = FramePresentation(self, color, 600, 400, WIDTHSCREEN, HEIGHTSCREEN)
+        self.presentation = FramePresentation(self, color, (WIDTHSCREEN*0.3125), (HEIGHTSCREEN*0.37))
 
         self.after(2000,self.replace)
 
@@ -49,30 +52,30 @@ class App(tb.Window):
             self.bg = "#190831"
         
 class FramePresentation(tb.Frame):
-    def __init__(self, master, color, width, height, widthscreen, heightscreen):
+    def __init__(self, master, color, width, height):
         super().__init__(master=master, bootstyle=color, width=width, height=height)
-        xposition = (widthscreen-width)/2
-        yposition = (heightscreen-height)/2
+        xposition = (WIDTHSCREEN-width)/2
+        yposition = (HEIGHTSCREEN-height)/2
         self.place(x=xposition, y=yposition)
 
-        tb.Label(self, text="Presentado por:", bootstyle=f"{color}inverse", font=("Segoe UI Light", 20)).place(relx=0.3, y=30)
-        tb.Label(self, text="David Alejandro Camacho León", bootstyle=f"{color}inverse", font=("Segoe UI Light", 15)).place(x=10, rely=0.25)
-        tb.Label(self, text="Kevin Guerrero Penagos", bootstyle=f"{color}inverse", font=("Segoe UI Light", 15)).place(x=10, rely=0.45)
-        tb.Label(self, text="Andres Felipe Vasquez", bootstyle=f"{color}inverse", font=("Segoe UI Light", 15)).place(x=10, rely=0.65)
+        tb.Label(self, text="Presentado por:", bootstyle=f"{color}inverse", font=("Segoe UI Light", int(HEIGHTSCREEN*0.019))).place(relx=0.32, rely=0.01)
+        tb.Label(self, text="David Alejandro Camacho León", bootstyle=f"{color}inverse", font=("Segoe UI Light", int(HEIGHTSCREEN*0.013))).place(relx=0.01, rely=0.25)
+        tb.Label(self, text="Kevin Guerrero Penagos", bootstyle=f"{color}inverse", font=("Segoe UI Light", int(HEIGHTSCREEN*0.013))).place(relx=0.01, rely=0.45)
+        tb.Label(self, text="Andres Felipe Vasquez", bootstyle=f"{color}inverse", font=("Segoe UI Light", int(HEIGHTSCREEN*0.013))).place(relx=0.01, rely=0.65)
 
 class GraphicFrame(tb.Frame):
     def __init__(self, master):
         super().__init__(master=master, bootstyle="light")
 
-        tb.Frame(self, bootstyle="secondary").pack(padx=43, pady=43,fill="both", expand=True)
+        tb.Frame(self, bootstyle="secondary").pack(padx=int(WIDTHSCREEN*0.02), pady=int(HEIGHTSCREEN*0.04),fill="both", expand=True)
 
         self.animated_frame = SlidePanel(self, 0.96, 0.5)
 
         button_style = tb.Style()
-        button_style.configure("primary.TButton", font=("Segoe UI Light", 12))
+        button_style.configure("primary.TButton", font=("Segoe UI Light", int(WIDTHSCREEN*0.00625)))
 
-        self.resultados = tb.Button(self.animated_frame, bootstyle="primary", style="primary_TButton", text="Resultados", width=113, state="disabled", command=self.animated_frame.animate)
-        self.resultados.pack()
+        self.resultados = tb.Button(self.animated_frame, bootstyle="primary", style="primary_TButton", text="Resultados", state="disabled", command=self.animated_frame.animate)
+        self.resultados.pack(fill=X)
 
 class SlidePanel(Frame):
     def __init__(self, parent, start_pos, end_pos):
@@ -115,11 +118,13 @@ class Menu(tb.Frame):
         self
         self.blank = True
 
-        IconButton(self, bootstyle="danger", path="./images/close.png", width=50, height=50, command=close).pack(padx=20, pady=20, anchor=NE)
+        self.icon_size = int(WIDTHSCREEN * 0.03)
+
+        IconButton(self, bootstyle="danger", path="./images/close.png", width=self.icon_size, height=self.icon_size, command=close).pack(padx=20, pady=20, anchor=NE)
 
         SectionTitle(self, title="Seleccion de Ruta")
 
-        self.route = routeSelector(self)
+        self.route = RouteSelector(self)
 
         SectionTitle(self, "Método de Búsqueda")
 
@@ -128,8 +133,13 @@ class Menu(tb.Frame):
         frame = tb.Frame(self, bootstyle="dark")
         frame.pack()
 
-        IconButton(frame, bootstyle="success", path="./images/search.png", width=75, height=75, command=search).grid(row=0, column=0, padx=100)
-        IconButton(frame, bootstyle="warning", path="./images/clear.png", width=75, height=75, command=clear).grid(row=0, column=1, padx=100)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        self.icon_size = int(WIDTHSCREEN * 0.04)
+
+        IconButton(frame, bootstyle="success", path="./images/search.png", width=self.icon_size, height=self.icon_size, command=search).grid(row=0, column=0, padx=self.icon_size, pady=(int(HEIGHTSCREEN*0.02), 0))
+        IconButton(frame, bootstyle="warning", path="./images/clear.png", width=self.icon_size, height=self.icon_size, command=clear).grid(row=0, column=1, padx=self.icon_size, pady=(int(HEIGHTSCREEN*0.02), 0))
 
 class IconButton(tb.Button):
     def __init__(self, master, bootstyle, width, height, path, command=None):
@@ -152,13 +162,13 @@ class SectionTitle(tb.Frame):
     def __init__(self, master, title):
         super().__init__(master=master, bootstyle="dark")
 
-        tb.Label(self, text=title, font=("Segoe UI Light", 20), bootstyle="darkinverse").pack(pady=20)
+        tb.Label(self, text=title, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)), bootstyle="darkinverse").pack(pady=int(HEIGHTSCREEN*0.018))
 
-        tb.Separator(self, bootstyle="light", orient="horizontal").pack(fill=X, padx=75, pady= 20)
+        tb.Separator(self, bootstyle="light", orient="horizontal").pack(fill=X, padx=int(WIDTHSCREEN*0.04), pady= int(HEIGHTSCREEN*0.018))
 
-        self.pack(fill=X, padx=75, pady=20)
+        self.pack(fill=X, padx=int(WIDTHSCREEN*0.04), pady=int(HEIGHTSCREEN*0.018))
 
-class routeSelector(tb.Frame):
+class RouteSelector(tb.Frame):
     def __init__(self, master):
         super().__init__(master=master, bootstyle="dark")
 
@@ -168,17 +178,18 @@ class routeSelector(tb.Frame):
         for i in range(1, 11):
             self.barrios.append(f"Barrio {i}")
 
-        self.barrio1 = tb.Combobox(self, bootstyle="light", values=self.barrios, state="readonly", font=(("Segoe UI Bold", 12)))
-        self.barrio1.grid(row=0, column=0, padx=20)
+
+        self.barrio1 = tb.Combobox(self, bootstyle="light", values=self.barrios, state="readonly", font=(("Segoe UI Bold", int(WIDTHSCREEN*0.00625))))
+        self.barrio1.grid(row=0, column=0)
         self.barrio1.bind("<<ComboboxSelected>>", self.deleteOption)
 
-        tb.Label(self, text="a", bootstyle="darkinverse", font=("Segoe UI Light", 20)).grid(row=0, column=1, padx=20)
+        tb.Label(self, text="a", bootstyle="darkinverse", font=("Segoe UI Light", int(WIDTHSCREEN*0.01))).grid(row=0, column=1, padx=(int(WIDTHSCREEN*0.03), 0))
 
-        self.barrio2 = tb.Combobox(self, bootstyle="light", values=self.barrios, state="readonly", font=("Segoe UI Bold", 12))
-        self.barrio2.grid(row=0, column=2, padx=20)
+        self.barrio2 = tb.Combobox(self, bootstyle="light", values=self.barrios, state="readonly", font=("Segoe UI Bold", int(WIDTHSCREEN*0.00625)))
+        self.barrio2.grid(row=0, column=2, padx=(int(WIDTHSCREEN*0.03), 0))
         self.barrio2.bind("<<ComboboxSelected>>", self.deleteOption)
 
-        self.pack()
+        self.pack(fill="both", padx=(int(WIDTHSCREEN*0.04), 0))
     
     def deleteOption(self, e):
         # Se crea nuevamente la lista cada vez que se selecciona una opcion
@@ -225,10 +236,18 @@ class SearchMethod(tb.Frame):
         self.searches = ("amplitud", "profundidad", "coste uniforme", "profundidad iterativa")
         
         self.search = StringVar()
+
+        self.radio_size = int(WIDTHSCREEN * 0.025)
+
         for i in range(4):
-            tb.Radiobutton(self, style="primary-outline-toolbutton_TRadioButton", variable=self.search, text=self.searches[i], value=self.searches[i], width=50).pack(pady=20)
+            radio = tb.Radiobutton(self, style="primary-outline-toolbutton_TRadioButton", variable=self.search, text=self.searches[i], value=self.searches[i], width=self.radio_size)
+            if (i == 0):
+                radio.pack(pady=(0, int(HEIGHTSCREEN*0.02)))
+            else:
+                radio.pack(pady=int(HEIGHTSCREEN*0.02))
+                
         
-        self.pack(pady=40)
+        self.pack(fill=BOTH, pady=int(HEIGHTSCREEN*0.01))
 
     def inBlank(self):
         if (self.search.get() != ""):
@@ -255,5 +274,7 @@ def close():
     main.destroy()
 
 main = App("lumen", "dark")
+
+print(WIDTHSCREEN)
     
 main.mainloop()
