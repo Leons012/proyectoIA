@@ -1,6 +1,12 @@
 from tkinter import *
 import ttkbootstrap as tb
 from PIL import ImageTk, Image
+from bfs_method import searchBFS
+from dfs_method import searchDFS
+from ucs_method import searchUCS
+from dsf_method import searchDSF
+
+SEARCHES = ("amplitud", "profundidad", "coste uniforme", "profundidad iterativa")
 
 CONEXIONES = {
     'Rincón del bosque': {'Villa Martha': 2500},
@@ -51,9 +57,9 @@ CONEXIONES = {
     'El Dorado': {'Villa Salome': 59, 'Timaka': 300, 'Lady di': 170, 'El Recreo': 190},
     'Timaka': {'Villa Salome': 280, 'El Dorado': 300},
     'Lady di': {'El Dorado': 170, 'El Recreo': 150},
-    'El Recreo': {'El Dorado': 190, 'Lady di': 150, 'Protecho': 210, 'alamos': 270},
-    'alamos': {'El Recreo': 270, 'Protecho': 260},
-    'Protecho': {'Modelia 1': 450, 'El Recreo': 210, 'alamos': 260, 'Santa Catalina': 150},
+    'El Recreo': {'El Dorado': 190, 'Lady di': 150, 'Protecho': 210, 'Alamos': 270},
+    'Alamos': {'El Recreo': 270, 'Protecho': 260},
+    'Protecho': {'Modelia 1': 450, 'El Recreo': 210, 'Alamos': 260, 'Santa Catalina': 150},
     'Santa Catalina': {'Protecho': 150, 'La Ceibita': 450, 'Modelia 1': 600},
     'La Ceibita': {'Santa Catalina': 450, 'El Pais': 500, 'Modelia 1': 700},
     'El Pais': {'La Ceibita': 500}
@@ -133,6 +139,17 @@ class GraphicFrame(tb.Frame):
 
         self.resultados = tb.Button(self.animated_frame, bootstyle="primary", style="primary_TButton", text="Resultados", state="disabled", command=self.animated_frame.animate)
         self.resultados.pack(fill=X)
+
+        self.results_title = tb.Label(self.animated_frame, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
+        self.results_title.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.014))
+
+        self.results_label = tb.Label(self.animated_frame, wraplength=WIDTHSCREEN*0.52,font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
+        self.results_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), fill=BOTH)
+
+        self.cost_label = tb.Label(self.animated_frame, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
+        self.cost_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.015))
+        self.cost = tb.Label(self.animated_frame, font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
+        self.cost.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0))
 
 class SlidePanel(Frame):
     def __init__(self, parent, start_pos, end_pos):
@@ -229,11 +246,15 @@ class RouteSelector(tb.Frame):
     def __init__(self, master):
         super().__init__(master=master, bootstyle="dark")
 
+        global CONEXIONES
+
         self.in_blank = True
 
+        self.lista_barrios = list(sorted(CONEXIONES.keys()))
+
         self.barrios = []
-        for i in range(1, 11):
-            self.barrios.append(f"Barrio {i}")
+        for i in self.lista_barrios:
+            self.barrios.append(i)
 
 
         self.barrio1 = tb.Combobox(self, bootstyle="light", values=self.barrios, state="readonly", font=(("Segoe UI Bold", int(WIDTHSCREEN*0.00625))))
@@ -249,10 +270,13 @@ class RouteSelector(tb.Frame):
         self.pack(fill="both", padx=(int(WIDTHSCREEN*0.04), 0))
     
     def deleteOption(self, e):
+
+        global CONEXIONES
+
         # Se crea nuevamente la lista cada vez que se selecciona una opcion
         self.barrios = []
-        for i in range(1, 11):
-            self.barrios.append(f"Barrio {i}")
+        for i in self.lista_barrios:
+            self.barrios.append(i)
         
         # Si el barrio 1 está seleccionado y se encuentra en la lista, se elimina
         if ((self.barrio1.get() != "")):
@@ -274,8 +298,8 @@ class RouteSelector(tb.Frame):
     def setBlank(self):
         self.in_blank = True
         self.barrios = []
-        for i in range(1, 11):
-            self.barrios.append(f"Barrio {i}")
+        for i in self.lista_barrios:
+            self.barrios.append(i)
         self.barrio1.config(values=self.barrios)
         self.barrio2.config(values=self.barrios)
         self.barrio1.set("")
@@ -290,16 +314,14 @@ class SearchMethod(tb.Frame):
         radiobutton_style = tb.Style()
         radiobutton_style.configure("primary-outline-toolbutton.TRadioButton", font=("Segoe UI Bold"))
 
-        self.searches = ("amplitud", "profundidad", "coste uniforme", "profundidad iterativa")
-
-        self.lensearches = len(self.searches)
+        self.lensearches = len(SEARCHES)
         
         self.search = StringVar()
 
         self.radio_size = int(WIDTHSCREEN * 0.025)
 
         for i in range(self.lensearches):
-            radio = tb.Radiobutton(self, style="primary-outline-toolbutton_TRadioButton", variable=self.search, text=self.searches[i], value=self.searches[i], width=self.radio_size)
+            radio = tb.Radiobutton(self, style="primary-outline-toolbutton_TRadioButton", variable=self.search, text=SEARCHES[i], value=SEARCHES[i], width=self.radio_size)
             if (i == 0):
                 radio.pack(pady=(0, int(HEIGHTSCREEN*(0.08/self.lensearches))))
             else:
@@ -320,6 +342,26 @@ class SearchMethod(tb.Frame):
 
 def search():
     if (not(main.menu.route.inBlank()) and not(main.menu.search_meth.inBlank())):
+
+        b1 = main.menu.route.barrio1.get()
+        b2 = main.menu.route.barrio2.get()
+
+        main.grafico.cost_label.config(text="")
+        main.grafico.cost.config(text="")
+        main.grafico.results_title.config(text="Ruta:")
+
+        if (main.menu.search_meth.search.get() == SEARCHES[0]):
+            result = searchBFS(b1, b2, CONEXIONES)
+        elif (main.menu.search_meth.search.get() == SEARCHES[1]):
+            result = searchDFS(b1, b2, CONEXIONES)
+        elif (main.menu.search_meth.search.get() == SEARCHES[2]):
+            resultados = searchUCS(b1, b2, CONEXIONES)
+            result = resultados[0]
+            main.grafico.cost_label.config(text="Coste:")
+            main.grafico.cost.config(text=f"{resultados[1]} m")
+        else:
+            result = searchDSF(b1, b2, CONEXIONES)
+        main.grafico.results_label.config(text=result)
         main.grafico.resultados.config(state="enabled")
 
 def clear():
@@ -327,6 +369,9 @@ def clear():
         main.menu.route.setBlank()
         main.menu.search_meth.setBlank()
     main.grafico.animated_frame.animate_backwards()
+    main.grafico.results_label.config(text="")
+    main.grafico.cost_label.config(text="")
+    main.grafico.cost.config(text="")
     main.grafico.resultados.config(state="disabled")
 
 def close():

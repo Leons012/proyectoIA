@@ -45,7 +45,7 @@ def searchBFS(b1, b2, connections):
         nodo = nodo.get_padre()
     resultado.append(b1)
     resultado.reverse()
-    return ('->'.join(resultado))
+    return (' -> '.join(resultado))
 
 
         

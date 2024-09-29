@@ -46,7 +46,6 @@ def search_solution_UCS(connections, init_state, solution):
 
 def searchUCS(init_state, solution, connections):
     solution_node = search_solution_UCS(connections, init_state, solution)
-    print(solution_node)
     # Mostrar resultado
     result = []
     node = solution_node
@@ -55,5 +54,5 @@ def searchUCS(init_state, solution, connections):
         node = node.get_father()
     result.append(init_state)
     result.reverse()
-    return ('->'.join(result), "Coste: %s" % str(solution_node.get_cost()))
+    return (' -> '.join(result), str(solution_node.get_cost()))
 

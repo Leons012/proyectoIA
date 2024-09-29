@@ -52,8 +52,6 @@ def search_DSF_solution(node, solution, visited_nodes, limit, connections):
     return None
 
 def searchDSF(b1, solution, connections):
-    for key in connections:
-        connections[key] = list(connections[key])
     
     init_state = Node(b1)
     solution_node = search_DSF_prof_iter(init_state, solution, connections)
@@ -67,6 +65,6 @@ def searchDSF(b1, solution, connections):
             node = node.get_father()
         result.append(init_state.get_data())
         result.reverse()
-        return ('->'.join(result))
+        return (' -> '.join(result))
     else:
         return ("Solución no encontrada")
