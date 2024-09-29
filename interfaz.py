@@ -85,11 +85,14 @@ class App(tb.Window):
 
     def replace(self):
         self.presentation.destroy()
-        self.menu = Menu(self)
-        self.menu.place(relx=0.6, y=0, relwidth=0.4, relheight=1)
 
-        self.grafico = GraphicFrame(self)
-        self.grafico.place(x=0, y=0, relwidth=0.6, relheight=1)
+        self.resultados = GraphicFrame(self)
+        self.resultados.pack(fill="both", expand=True)
+
+        self.resultados = Results(self, 0.96, 0.5)
+
+        self.panel_menu = MenuPanel(self, 0.58, 0.98)
+
         self.attributes('-transparentcolor', "")
     
 
@@ -132,37 +135,19 @@ class GraphicFrame(tb.Frame):
 
         tb.Frame(self, bootstyle="secondary").pack(padx=int(WIDTHSCREEN*0.02), pady=int(HEIGHTSCREEN*0.04),fill="both", expand=True)
 
-        self.animated_frame = SlidePanel(self, 0.96, 0.5)
-
-        button_style = tb.Style()
-        button_style.configure("primary.TButton", font=("Segoe UI Light", int(WIDTHSCREEN*0.00625)))
-
-        self.resultados = tb.Button(self.animated_frame, bootstyle="primary", style="primary_TButton", text="Resultados", state="disabled", command=self.animated_frame.animate)
-        self.resultados.pack(fill=X)
-
-        self.results_title = tb.Label(self.animated_frame, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
-        self.results_title.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.014))
-
-        self.results_label = tb.Label(self.animated_frame, wraplength=WIDTHSCREEN*0.52,font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
-        self.results_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), fill=BOTH)
-
-        self.cost_label = tb.Label(self.animated_frame, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
-        self.cost_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.015))
-        self.cost = tb.Label(self.animated_frame, font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
-        self.cost.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0))
-
-class SlidePanel(Frame):
+class XSlidePanel(Frame):
     def __init__(self, parent, start_pos, end_pos):
         super().__init__(master=parent)
 
         self.start_pos = start_pos
         self.end_pos = end_pos
         self.height = 1-abs(start_pos-end_pos)
+        self.WIDTH = 0.58
 
         self.pos = start_pos
         self.in_start_pos = True
 
-        self.place(relx=0, rely=self.start_pos, relheight=self.height, relwidth=1)
+        self.place(relx=0, rely=self.start_pos, relheight=self.height, relwidth=self.WIDTH)
     
     def animate(self):
         if self.in_start_pos:
@@ -173,7 +158,7 @@ class SlidePanel(Frame):
     def animate_forward(self):
         if self.pos > self.end_pos:
             self.pos -= 0.05
-            self.place(relx=0, rely=self.pos, relheight=self.height, relwidth=1)
+            self.place(relx=0, rely=self.pos, relheight=self.height, relwidth=self.WIDTH)
             self.after(10, self.animate_forward)
         else:
             self.in_start_pos = False
@@ -181,15 +166,83 @@ class SlidePanel(Frame):
     def animate_backwards(self):
         if self.pos < self.start_pos:
             self.pos += 0.05
-            self.place(relx=0, rely=self.pos, relheight=self.height, width=1)
+            self.place(relx=0, rely=self.pos, relheight=self.height, relwidth=self.WIDTH)
             self.after(10, self.animate_backwards)
         else:
             self.in_start_pos = True
 
+class Results(XSlidePanel):
+    def __init__(self, master, start_pos, end_pos):
+        super().__init__(parent=master, start_pos=start_pos, end_pos=end_pos)
+
+        button_style = tb.Style()
+        button_style.configure("primary.TButton", font=("Segoe UI Light", int(WIDTHSCREEN*0.00625)))
+
+        self.resultados = tb.Button(self, bootstyle="primary", style="primary_TButton", text="Resultados", state="disabled", command=self.animate)
+        self.resultados.pack(fill=X)
+
+        self.results_title = tb.Label(self, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
+        self.results_title.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.014))
+
+        self.results_label = tb.Label(self, wraplength=WIDTHSCREEN*0.52,font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
+        self.results_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), fill=BOTH)
+
+        self.cost_label = tb.Label(self, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
+        self.cost_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.015))
+        self.cost = tb.Label(self, font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
+        self.cost.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0))
+
+class YSlidePanel(Frame):
+    def __init__(self, parent, start_pos, end_pos):
+        super().__init__(master=parent)
+
+        self.start_pos = start_pos
+        self.end_pos = end_pos
+        self.width = abs(end_pos-start_pos)+0.02
+
+        self.pos = start_pos
+        self.in_start_pos = True
+
+        self.place(relx=self.start_pos, rely=0, relwidth=self.width, relheight=1)
+    
+    def animate(self):
+        if self.in_start_pos:
+            self.animate_forward()
+        else:
+            self.animate_backwards()
+        
+    def animate_forward(self):
+        if self.pos < self.end_pos:
+            self.pos += 0.05
+            self.place(relx=self.pos, rely=0, relwidth=self.width, relheight=1)
+            self.after(10, self.animate_forward)
+        else:
+            self.in_start_pos = False
+
+    def animate_backwards(self):
+        if self.pos > self.start_pos:
+            self.pos -= 0.05
+            self.place(relx=self.pos, rely=0, relwidth=self.width, relheight=1)
+            self.after(10, self.animate_backwards)
+        else:
+            self.in_start_pos = True
+
+class MenuPanel(YSlidePanel):
+    def __init__(self, master, start_pos, end_pos):
+        super().__init__(parent=master, start_pos=start_pos, end_pos=end_pos)
+
+        self.frame1 = tb.Frame(self, bootstyle="light")
+        self.frame1.pack(fill=Y, side="left")
+
+        self.slide_menu = tb.Button(self.frame1, text="O\np\nc\ni\no\nn\ne\ns", bootstyle="success", width=3, command=self.animate)
+        self.slide_menu.pack(side="left", fill=Y, pady=43)
+
+        self.menu = Menu(self)
+        self.menu.pack(fill="both", expand=True, side="right")
+
 class Menu(tb.Frame):
     def __init__(self, master):
         super().__init__(master=master, bootstyle="dark")
-        self
         self.blank = True
 
         self.icon_size = int(WIDTHSCREEN * 0.03)
@@ -341,38 +394,38 @@ class SearchMethod(tb.Frame):
         self.in_blank = True
 
 def search():
-    if (not(main.menu.route.inBlank()) and not(main.menu.search_meth.inBlank())):
+    if (not(main.panel_menu.menu.route.inBlank()) and not(main.panel_menu.menu.search_meth.inBlank())):
 
-        b1 = main.menu.route.barrio1.get()
-        b2 = main.menu.route.barrio2.get()
+        b1 = main.panel_menu.menu.route.barrio1.get()
+        b2 = main.panel_menu.menu.route.barrio2.get()
 
-        main.grafico.cost_label.config(text="")
-        main.grafico.cost.config(text="")
-        main.grafico.results_title.config(text="Ruta:")
+        main.resultados.cost_label.config(text="")
+        main.resultados.cost.config(text="")
+        main.resultados.results_title.config(text="Ruta:")
 
-        if (main.menu.search_meth.search.get() == SEARCHES[0]):
+        if (main.panel_menu.menu.search_meth.search.get() == SEARCHES[0]):
             result = searchBFS(b1, b2, CONEXIONES)
-        elif (main.menu.search_meth.search.get() == SEARCHES[1]):
+        elif (main.panel_menu.menu.search_meth.search.get() == SEARCHES[1]):
             result = searchDFS(b1, b2, CONEXIONES)
-        elif (main.menu.search_meth.search.get() == SEARCHES[2]):
+        elif (main.panel_menu.menu.search_meth.search.get() == SEARCHES[2]):
             resultados = searchUCS(b1, b2, CONEXIONES)
             result = resultados[0]
-            main.grafico.cost_label.config(text="Coste:")
-            main.grafico.cost.config(text=f"{resultados[1]} m")
+            main.resultados.cost_label.config(text="Coste:")
+            main.resultados.cost.config(text=f"{resultados[1]} m")
         else:
             result = searchDSF(b1, b2, CONEXIONES)
-        main.grafico.results_label.config(text=result)
-        main.grafico.resultados.config(state="enabled")
+        main.resultados.results_label.config(text=result)
+        main.resultados.resultados.config(state="enabled")
 
 def clear():
-    if (not(main.menu.route.inBlank()) or not(main.menu.search_meth.inBlank())):
-        main.menu.route.setBlank()
-        main.menu.search_meth.setBlank()
-    main.grafico.animated_frame.animate_backwards()
-    main.grafico.results_label.config(text="")
-    main.grafico.cost_label.config(text="")
-    main.grafico.cost.config(text="")
-    main.grafico.resultados.config(state="disabled")
+    if (not(main.panel_menu.menu.route.inBlank()) or not(main.panel_menu.menu.search_meth.inBlank())):
+        main.panel_menu.menu.route.setBlank()
+        main.panel_menu.menu.search_meth.setBlank()
+    main.resultados.animate_backwards()
+    main.resultados.results_label.config(text="")
+    main.resultados.cost_label.config(text="")
+    main.resultados.cost.config(text="")
+    main.resultados.resultados.config(state="disabled")
 
 def close():
     main.destroy()
