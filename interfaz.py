@@ -234,8 +234,8 @@ class MenuPanel(YSlidePanel):
         self.frame1 = tb.Frame(self, bootstyle="light")
         self.frame1.pack(fill=Y, side="left")
 
-        self.slide_menu = tb.Button(self.frame1, text="O\np\nc\ni\no\nn\ne\ns", bootstyle="success", width=3, command=self.animate)
-        self.slide_menu.pack(side="left", fill=Y, pady=43)
+        self.slide_menu = tb.Button(self.frame1, text="O\np\nc\ni\no\nn\ne\ns", bootstyle="success", width=int(WIDTHSCREEN*0.00156), command=self.animate)
+        self.slide_menu.pack(side="left", fill=Y, pady=int(HEIGHTSCREEN*0.04))
 
         self.menu = Menu(self)
         self.menu.pack(fill="both", expand=True, side="right")
