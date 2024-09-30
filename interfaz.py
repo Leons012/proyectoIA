@@ -1,6 +1,9 @@
 from tkinter import *
-import ttkbootstrap as tb
 from PIL import ImageTk, Image
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import ttkbootstrap as tb
+import networkx as nx
+import matplotlib.pyplot as plt
 from bfs_method import searchBFS
 from dfs_method import searchDFS
 from ucs_method import searchUCS
@@ -26,11 +29,11 @@ CONEXIONES = {
     'Floresta': {'Villa Cindy': 210, 'Pacande': 400, 'Reservas de Cantabria': 200, 'Cantabria': 500},
     'Villa Cindy': {'Villa Rocio': 96, 'Floresta': 210},
     'Villa Rocio': {'San Pablo': 400, 'Villa Cindy': 96, 'Jardin de los Abuelos': 1200, 'Villa Marin': 500},
-    'San Pablo': {'Cantabria': 450, 'La Candelaria': 550, 'Jardin de los Abuelos': 1400, 'Villa Rocio': 400},
-    'La Candelaria': {'Jardin de los Abuelos': 1300, 'Villa Marin': 550},
+    'San Pablo': {'Cantabria': 450, 'La Candelaria': 550, 'Jardin de los Abuelos': 1400, 'Villa Rocio': 400, 'Bella Suiza':400},
+    'La Candelaria': {'San Pablo':550, 'Jardin de los Abuelos': 1300, 'Villa Marin': 550},
     'Jardin de los Abuelos': {'La Candelaria': 1400, 'San Pablo': 1400, 'Santa Ana': 1000, 'Villa Marin': 800, 'Villa Rocio': 1200},
     'Villa Marin': {'Jardin de los Abuelos': 800, 'La Candelaria': 550, 'Villa Rocio': 500, 'Montecarlo 2': 300},
-    'Montecarlo 2': {'Fuentes del salado': 250, 'San Tropel': 450, 'Nueva Bilbao': 700},
+    'Montecarlo 2': {'Villa Marin':300, 'Fuentes del salado': 250, 'San Tropel': 450, 'Nueva Bilbao': 700},
     'Fuentes del salado': {'Montecarlo 2': 250},
     'San Tropel': {'San Sebastian': 110, 'Montecarlo 2': 450},
     'San Sebastian': {'Villa zulay': 400, 'San Tropel': 110, 'Portales del norte': 350},
@@ -52,7 +55,7 @@ CONEXIONES = {
     'Chico': {'Villa Camila': 280,'Territorio de paz':550, 'Modelia 1': 400, 'Modelia 2': 550, 'Villa Salome': 260},
     'Territorio de paz': {'Comfatolima': 150, 'Chico': 550},
     'Modelia 1': {'Chico': 400, 'Modelia 2': 450, 'Villa Salome': 350, 'Protecho': 450, 'La Ceibita': 700, 'Santa Catalina': 600},
-    'Modelia 2': {'Chico':550, 'Modelia 1': 450},
+    'Modelia 2': {'Chico':550, 'Modelia 1': 450, 'Villa Salome':550},
     'Villa Salome': {'Chico': 260, 'Modelia 2': 550,'El Dorado': 59, 'Timaka': 280, 'Modelia 1': 350},
     'El Dorado': {'Villa Salome': 59, 'Timaka': 300, 'Lady di': 170, 'El Recreo': 190},
     'Timaka': {'Villa Salome': 280, 'El Dorado': 300},
@@ -129,15 +132,113 @@ class FramePresentation(tb.Frame):
         tb.Label(self, text="Kevin Guerrero Penagos", bootstyle=f"{color}inverse", font=("Segoe UI Light", int(HEIGHTSCREEN*0.013))).place(relx=0.01, rely=0.45)
         tb.Label(self, text="Andres Felipe Vasquez", bootstyle=f"{color}inverse", font=("Segoe UI Light", int(HEIGHTSCREEN*0.013))).place(relx=0.01, rely=0.65)
 
+class GraphFrame(tb.Frame):
+    def __init__(self, master):
+        super().__init__(master=master, bootstyle="light")
+
+        # Crear el grafo
+        self.G = nx.Graph()
+
+        lista_barrios = []
+        for i in CONEXIONES:
+            for j in CONEXIONES[i]:
+                if (j, i) not in lista_barrios:
+                    lista_barrios.append((i, j))
+        self.G.add_edges_from(lista_barrios)
+
+        # tupla_pos = ((0.5, 0.9),
+        #              (0.5, 0.8),
+        #              (0.5, 0.7),
+        #              (0.4, 0.6),
+        #              (0.6, 0.6),
+        #              (0.6, 0.5),
+        #              (0.7, 0.5),
+        #              (0.65, 0.4),
+        #              (0.7, 0.4),
+        #              (0.8, 0.4))
+        # pos = {
+        #     "Rincón del bosque": ,
+        #     "Villa martha": ,
+        #     "Santa Ana": ,
+        #     "Pacande": ,
+        #     "Reservas de Cantabria": ,
+        #     "Urbanizacion floresta": ,
+        #     "Urbanizacion la cabaña": ,
+        #     "Urbanizacion la floresta": ,
+        #     "Urbanizacion Diana": ,
+        #     "Rosales de Tailandia": ,
+        #     "Urbanizacion San Luis": (0.75, 0.5),
+        #     "Cantabria": (0.5, 0.5),
+        #     "Praderas del norte ML": (0.4, 0.4),
+        #     "Balnearo tierra firme": (0.5, 0.3),
+        #     "Mirador de Cantabria": (0.55, 0.3),
+        #     "Urbanizacion Bella Suiza": (0.5, 0.25),
+        #     "Urbanizacion San Pablo": (0.5, 0.2),
+        #     "Villa Cindy": (0.4, 0.3),
+        #     "Conjunto Villa Rocio": (0.4, 0.2),
+        #     "La Calendaria": (0.5, 0.1),
+        #     "Coorporacion Jardin de los abuelos": (0.5, 0.05),
+        #     "Barrio Santa Ana": (0.4, 0.15),
+        #     "Urbanizacion Villa Marin": (0.6, 0.1),
+        #     "Urbanizacion Monte Carlo 2": (0.4, 0.2),
+        #     "Fuentes del Salado": (0.3, 0.1),
+        #     "SAN TROPEL": (0.25, 0.15),
+        #     "Urbanizacion San sebastian": (0.2, 0.15),
+        #     "Villa zulay": (0.2, 0.1),
+        #     "Fuente Real Conjunto cerrado": (0.15, 0.05),
+        #     "Portales del Norte": (0.3, 0.1),
+        #     "Barrio la ceiba": (0.4, 0.05),
+        #     "Montecarlo": (0.35, 0.1),
+        #     "Barrio La Victoria": (0.35, 0.2),
+        #     "Barrio El salado": (0.4, 0.2),
+        #     "Lagos del salado": (0.45, 0.2),
+        #     "Liceo San Isidro Ladrador": (0.45, 0.1),
+        #     "Urbanizacion Comfatolima": (0.3, 0.3),
+        #     "Territorio de paz": (0.5, 0.4),
+        #     "Urbanizacion Villa Camila": (0.6, 0.4),
+        #     "Granja H&R": (0.5, 0.35),
+        #     "Parque Biosaludable chico": (0.6, 0.35),
+        #     "Modelia 1": (0.7, 0.35),
+        #     "Modelia 2": (0.7, 0.3),
+        #     "Villa Salome": (0.75, 0.25),
+        #     "Salon Comunal El Dorado": (0.75, 0.15),
+        #     "Timaka": (0.8, 0.2),
+        #     "Urbanizacion Leidi di": (0.8, 0.1),
+        #     "Urbanizacion Hacienda el recreo": (0.9, 0.2),
+        #     "Parque Protecho El Salado": (0.7, 0.1),
+        #     "Urbanisacion Santa Catalina": (0.75, 0.1),
+        #     "Urbanizacion La Ceibita": (0.6, 0.1),
+        #     "Terminal busetas": (0.7, 0.05),
+        #     "Nuevo bilbao": (0.3, 0.2),  
+        # }
+
+        # Crear la figura y el eje
+        self.fig, self.ax = plt.subplots(figsize=(WIDTHSCREEN/130.169, HEIGHTSCREEN/135.678))
+
+        # Dibujar el grafo
+        nx.draw(self.G, pos, with_labels=True, ax=self.ax, node_size=700, node_color='lightblue')
+
+        # Crear el canvas para mostrar la figura
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+        self.canvas.get_tk_widget().pack()
+
 class GraphicFrame(tb.Frame):
     def __init__(self, master):
         super().__init__(master=master, bootstyle="light")
 
-        tb.Frame(self, bootstyle="secondary").pack(padx=int(WIDTHSCREEN*0.02), pady=int(HEIGHTSCREEN*0.04),fill="both", expand=True)
+        # Crear el frame que contendrá el gráfico
+        self.graphic = tb.Frame(self, bootstyle="secondary")
+        self.graphic.pack(padx=int(WIDTHSCREEN*0.02), pady=int(HEIGHTSCREEN*0.04), fill="both", expand=True)
 
-class XSlidePanel(Frame):
+        graph_frame = GraphFrame(self.graphic)
+        graph_frame.pack(fill="both", expand=True)
+        
+
+
+
+class XSlidePanel(tb.Frame):
     def __init__(self, parent, start_pos, end_pos):
-        super().__init__(master=parent)
+        super().__init__(master=parent, bootstyle="light")
 
         self.start_pos = start_pos
         self.end_pos = end_pos
@@ -181,15 +282,15 @@ class Results(XSlidePanel):
         self.resultados = tb.Button(self, bootstyle="primary", style="primary_TButton", text="Resultados", state="disabled", command=self.animate)
         self.resultados.pack(fill=X)
 
-        self.results_title = tb.Label(self, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
+        self.results_title = tb.Label(self, bootstyle="lightinverse", font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
         self.results_title.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.014))
 
-        self.results_label = tb.Label(self, wraplength=WIDTHSCREEN*0.52,font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
+        self.results_label = tb.Label(self, bootstyle="lightinverse", wraplength=WIDTHSCREEN*0.52,font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
         self.results_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), fill=BOTH)
 
         self.cost_label = tb.Label(self, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
         self.cost_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.015))
-        self.cost = tb.Label(self, font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
+        self.cost = tb.Label(self,bootstyle="lightinverse", font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
         self.cost.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0))
 
 class YSlidePanel(Frame):
@@ -428,6 +529,7 @@ def clear():
     main.resultados.resultados.config(state="disabled")
 
 def close():
+    plt.close("all")
     main.destroy()
 
 main = App("lumen", "dark")
