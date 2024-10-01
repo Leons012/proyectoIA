@@ -47,9 +47,11 @@ def searchDFS(b1, b2, conexiones):
     
     # Ejecutamos la búsqueda DFS
     camino_encontrado = dfs_node(inicio, objetivo)
+
+    print(tuple(str(n) for n in camino_encontrado))
     
     # Imprimimos el resultado
     if camino_encontrado:
-        return (" -> ".join(str(n) for n in camino_encontrado))
+        return tuple(str(n) for n in camino_encontrado)
     else:
         return ("No se encontró un camino.")

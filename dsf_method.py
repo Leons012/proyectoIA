@@ -65,6 +65,6 @@ def searchDSF(b1, solution, connections):
             node = node.get_father()
         result.append(init_state.get_data())
         result.reverse()
-        return (' -> '.join(result))
+        return (result)
     else:
         return ("Solución no encontrada")

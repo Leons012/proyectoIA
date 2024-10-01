@@ -68,6 +68,64 @@ CONEXIONES = {
     'El Pais': {'La Ceibita': 500}
 }
 
+TUPLA_POS = ((0.1, 0.8),
+                     (0.15, 0.7),
+                     (0.23, 0.6),
+                     (0.23, 0.75),
+                     (0.27, 0.95),
+                     (0.38, 1),
+                     (0.47, 0.93),
+                     (0.49, 0.8),
+                     (0.58, 0.98),
+                     (0.6, 0.85),
+                     (0.7, 0.9),
+                     (0.75, 1),
+                     (0.8, 0.75),
+                     (0.7, 0.7),
+                     (0.49, 0.7),
+                     (0.38, 0.65),
+                     (0.53, 0.64),
+                     (0.6, 0.75),
+                     (0.76, 0.46),
+                     (0.63, 0.55),
+                     (0.57, 0.42),
+                     (0.57, 0.32),
+                     (0.68, 0.37),
+                     (0.5, 0.27),
+                     (0.35, 0.32),
+                     (0.27, 0.45),
+                     (0.4, 0.52),
+                     (0.47, 0.45),
+                     (0.2, 0.35),
+                     (0.1, 0.25),
+                     (0.1, 0.4),
+                     (0.17, 0.2),
+                     (0.1, 0.1),
+                     (0.2, 0.1),
+                     (0.27, 0.17),
+                     (0.37, 0.2),
+                     (0.25, 0.27),
+                     (0.3, 0.1),
+                     (0.4, 0.1),
+                     (0.51, 0.1),
+                     (0.57, 0.15),
+                     (0.47, 0.22),
+                     (0.72, 0.2),
+                     (0.67, 0.1),
+                     (0.67, 0.3),
+                     (0.8, 0.3),
+                     (0.9, 0.45),
+                     (0.75, 0.1),
+                     (0.92, 0.35),
+                     (1, 0.25),
+                     (0.9, 0.23),
+                     (0.85, 0.1),
+                     (0.95, 0.14),
+                     (1, 0.05)
+                    )
+
+res_busqueda = []
+
 class App(tb.Window):
     def __init__(self, theme, color):
         super().__init__(themename=theme)
@@ -89,8 +147,8 @@ class App(tb.Window):
     def replace(self):
         self.presentation.destroy()
 
-        self.resultados = GraphicFrame(self)
-        self.resultados.pack(fill="both", expand=True)
+        self.grafo = GraphicFrame(self)
+        self.grafo.pack(fill="both", expand=True)
 
         self.resultados = Results(self, 0.96, 0.5)
 
@@ -133,90 +191,37 @@ class FramePresentation(tb.Frame):
         tb.Label(self, text="Andres Felipe Vasquez", bootstyle=f"{color}inverse", font=("Segoe UI Light", int(HEIGHTSCREEN*0.013))).place(relx=0.01, rely=0.65)
 
 class GraphFrame(tb.Frame):
-    def __init__(self, master):
+    def __init__(self, master, resultados=None, color=None, **options):
+
+        self.resultados = resultados
+        self.color = color
+        self.options = options
+
         super().__init__(master=master, bootstyle="light")
+
+        self.width, self.height = WIDTHSCREEN*0.08, HEIGHTSCREEN / 110
 
         # Crear el grafo
         self.G = nx.Graph()
 
         lista_barrios = []
+        pos = []
         for i in CONEXIONES:
             for j in CONEXIONES[i]:
                 if (j, i) not in lista_barrios:
                     lista_barrios.append((i, j))
         self.G.add_edges_from(lista_barrios)
 
-        # tupla_pos = ((0.5, 0.9),
-        #              (0.5, 0.8),
-        #              (0.5, 0.7),
-        #              (0.4, 0.6),
-        #              (0.6, 0.6),
-        #              (0.6, 0.5),
-        #              (0.7, 0.5),
-        #              (0.65, 0.4),
-        #              (0.7, 0.4),
-        #              (0.8, 0.4))
-        # pos = {
-        #     "Rincón del bosque": ,
-        #     "Villa martha": ,
-        #     "Santa Ana": ,
-        #     "Pacande": ,
-        #     "Reservas de Cantabria": ,
-        #     "Urbanizacion floresta": ,
-        #     "Urbanizacion la cabaña": ,
-        #     "Urbanizacion la floresta": ,
-        #     "Urbanizacion Diana": ,
-        #     "Rosales de Tailandia": ,
-        #     "Urbanizacion San Luis": (0.75, 0.5),
-        #     "Cantabria": (0.5, 0.5),
-        #     "Praderas del norte ML": (0.4, 0.4),
-        #     "Balnearo tierra firme": (0.5, 0.3),
-        #     "Mirador de Cantabria": (0.55, 0.3),
-        #     "Urbanizacion Bella Suiza": (0.5, 0.25),
-        #     "Urbanizacion San Pablo": (0.5, 0.2),
-        #     "Villa Cindy": (0.4, 0.3),
-        #     "Conjunto Villa Rocio": (0.4, 0.2),
-        #     "La Calendaria": (0.5, 0.1),
-        #     "Coorporacion Jardin de los abuelos": (0.5, 0.05),
-        #     "Barrio Santa Ana": (0.4, 0.15),
-        #     "Urbanizacion Villa Marin": (0.6, 0.1),
-        #     "Urbanizacion Monte Carlo 2": (0.4, 0.2),
-        #     "Fuentes del Salado": (0.3, 0.1),
-        #     "SAN TROPEL": (0.25, 0.15),
-        #     "Urbanizacion San sebastian": (0.2, 0.15),
-        #     "Villa zulay": (0.2, 0.1),
-        #     "Fuente Real Conjunto cerrado": (0.15, 0.05),
-        #     "Portales del Norte": (0.3, 0.1),
-        #     "Barrio la ceiba": (0.4, 0.05),
-        #     "Montecarlo": (0.35, 0.1),
-        #     "Barrio La Victoria": (0.35, 0.2),
-        #     "Barrio El salado": (0.4, 0.2),
-        #     "Lagos del salado": (0.45, 0.2),
-        #     "Liceo San Isidro Ladrador": (0.45, 0.1),
-        #     "Urbanizacion Comfatolima": (0.3, 0.3),
-        #     "Territorio de paz": (0.5, 0.4),
-        #     "Urbanizacion Villa Camila": (0.6, 0.4),
-        #     "Granja H&R": (0.5, 0.35),
-        #     "Parque Biosaludable chico": (0.6, 0.35),
-        #     "Modelia 1": (0.7, 0.35),
-        #     "Modelia 2": (0.7, 0.3),
-        #     "Villa Salome": (0.75, 0.25),
-        #     "Salon Comunal El Dorado": (0.75, 0.15),
-        #     "Timaka": (0.8, 0.2),
-        #     "Urbanizacion Leidi di": (0.8, 0.1),
-        #     "Urbanizacion Hacienda el recreo": (0.9, 0.2),
-        #     "Parque Protecho El Salado": (0.7, 0.1),
-        #     "Urbanisacion Santa Catalina": (0.75, 0.1),
-        #     "Urbanizacion La Ceibita": (0.6, 0.1),
-        #     "Terminal busetas": (0.7, 0.05),
-        #     "Nuevo bilbao": (0.3, 0.2),  
-        # }
+        pos = dict(zip(tuple(CONEXIONES.keys()), TUPLA_POS))
 
         # Crear la figura y el eje
-        self.fig, self.ax = plt.subplots(figsize=(WIDTHSCREEN/130.169, HEIGHTSCREEN/135.678))
+        self.fig, self.ax = plt.subplots(figsize=(WIDTHSCREEN*0.007682, HEIGHTSCREEN*0.00737))
+
+        self.fig.set_size_inches(self.width, self.height)
 
         # Dibujar el grafo
-        nx.draw(self.G, pos, with_labels=True, ax=self.ax, node_size=700, node_color='lightblue')
+        nx.draw(self.G, pos, with_labels=False, ax=self.ax, node_size=int((HEIGHTSCREEN*0.64815)), node_color='lightblue')
+        nx.draw_networkx_labels(self.G, pos, ax=self.ax, font_size=int(WIDTHSCREEN*0.0052084), font_family='Segoe UI')
 
         # Crear el canvas para mostrar la figura
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
@@ -230,11 +235,11 @@ class GraphicFrame(tb.Frame):
         self.graphic = tb.Frame(self, bootstyle="secondary")
         self.graphic.pack(padx=int(WIDTHSCREEN*0.02), pady=int(HEIGHTSCREEN*0.04), fill="both", expand=True)
 
-        graph_frame = GraphFrame(self.graphic)
-        graph_frame.pack(fill="both", expand=True)
-        
-
-
+        self.graph_frame = GraphFrame(self.graphic)
+        self.graph_frame.pack(fill="both", expand=True)
+    
+    def clear_graph(self):
+        self.graph_frame.destroy()
 
 class XSlidePanel(tb.Frame):
     def __init__(self, parent, start_pos, end_pos):
@@ -288,7 +293,7 @@ class Results(XSlidePanel):
         self.results_label = tb.Label(self, bootstyle="lightinverse", wraplength=WIDTHSCREEN*0.52,font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
         self.results_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), fill=BOTH)
 
-        self.cost_label = tb.Label(self, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
+        self.cost_label = tb.Label(self, bootstyle="lightinverse", font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
         self.cost_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.015))
         self.cost = tb.Label(self,bootstyle="lightinverse", font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
         self.cost.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0))
@@ -495,6 +500,9 @@ class SearchMethod(tb.Frame):
         self.in_blank = True
 
 def search():
+
+    global res_busqueda
+
     if (not(main.panel_menu.menu.route.inBlank()) and not(main.panel_menu.menu.search_meth.inBlank())):
 
         b1 = main.panel_menu.menu.route.barrio1.get()
@@ -515,8 +523,11 @@ def search():
             main.resultados.cost.config(text=f"{resultados[1]} m")
         else:
             result = searchDSF(b1, b2, CONEXIONES)
-        main.resultados.results_label.config(text=result)
+        main.resultados.results_label.config(text='->'.join(result))
         main.resultados.resultados.config(state="enabled")
+        drawGraph()
+    
+    res_busqueda = result
 
 def clear():
     if (not(main.panel_menu.menu.route.inBlank()) or not(main.panel_menu.menu.search_meth.inBlank())):
@@ -527,10 +538,14 @@ def clear():
     main.resultados.cost_label.config(text="")
     main.resultados.cost.config(text="")
     main.resultados.resultados.config(state="disabled")
+    
 
 def close():
     plt.close("all")
     main.destroy()
+
+def drawGraph():
+    main.grafo.clear_graph()
 
 main = App("lumen", "dark")
     
