@@ -68,61 +68,63 @@ CONEXIONES = {
     'El Pais': {'La Ceibita': 500}
 }
 
+TUPLA_CONEXIONES = tuple(CONEXIONES)
+
 TUPLA_POS = ((0.1, 0.8),
-                     (0.15, 0.7),
-                     (0.23, 0.6),
-                     (0.23, 0.75),
-                     (0.27, 0.95),
-                     (0.38, 1),
-                     (0.47, 0.93),
-                     (0.49, 0.8),
-                     (0.58, 0.98),
-                     (0.6, 0.85),
-                     (0.7, 0.9),
-                     (0.75, 1),
-                     (0.8, 0.75),
-                     (0.7, 0.7),
-                     (0.49, 0.7),
-                     (0.38, 0.65),
-                     (0.53, 0.64),
-                     (0.6, 0.75),
-                     (0.76, 0.46),
-                     (0.63, 0.55),
-                     (0.57, 0.42),
-                     (0.57, 0.32),
-                     (0.68, 0.37),
-                     (0.5, 0.27),
-                     (0.35, 0.32),
-                     (0.27, 0.45),
-                     (0.4, 0.52),
-                     (0.47, 0.45),
-                     (0.2, 0.35),
-                     (0.1, 0.25),
-                     (0.1, 0.4),
-                     (0.17, 0.2),
-                     (0.1, 0.1),
-                     (0.2, 0.1),
-                     (0.27, 0.17),
-                     (0.37, 0.2),
-                     (0.25, 0.27),
-                     (0.3, 0.1),
-                     (0.4, 0.1),
-                     (0.51, 0.1),
-                     (0.57, 0.15),
-                     (0.47, 0.22),
-                     (0.72, 0.2),
-                     (0.67, 0.1),
-                     (0.67, 0.3),
-                     (0.8, 0.3),
-                     (0.9, 0.45),
-                     (0.75, 0.1),
-                     (0.92, 0.35),
-                     (1, 0.25),
-                     (0.9, 0.23),
-                     (0.85, 0.1),
-                     (0.95, 0.14),
-                     (1, 0.05)
-                    )
+             (0.15, 0.7),
+             (0.23, 0.6),
+             (0.23, 0.75),
+             (0.27, 0.95),
+             (0.38, 1),
+             (0.47, 0.93),
+             (0.49, 0.8),
+             (0.58, 0.98),
+             (0.6, 0.85),
+             (0.7, 0.9),
+             (0.75, 1),
+             (0.8, 0.75),
+             (0.7, 0.7),
+             (0.49, 0.7),
+             (0.38, 0.65),
+             (0.53, 0.64),
+             (0.6, 0.75),
+             (0.76, 0.46),
+             (0.63, 0.55),
+             (0.57, 0.42),
+             (0.57, 0.32),
+             (0.68, 0.37),
+             (0.5, 0.27),
+             (0.35, 0.32),
+             (0.27, 0.45),
+             (0.4, 0.52),
+             (0.47, 0.45),
+             (0.2, 0.35),
+             (0.1, 0.25),
+             (0.1, 0.4),
+             (0.17, 0.2),
+             (0.1, 0.1),
+             (0.2, 0.1),
+             (0.27, 0.17),
+             (0.37, 0.2),
+             (0.25, 0.27),
+             (0.3, 0.1),
+             (0.4, 0.1),
+             (0.51, 0.1),
+             (0.57, 0.15),
+             (0.47, 0.22),
+             (0.72, 0.2),
+             (0.67, 0.1),
+             (0.67, 0.3),
+             (0.8, 0.3),
+             (0.9, 0.45),
+             (0.75, 0.1),
+             (0.92, 0.35),
+             (1, 0.25),
+             (0.9, 0.23),
+             (0.85, 0.1),
+             (0.95, 0.14),
+             (1, 0.05)
+)
 
 res_busqueda = []
 
@@ -191,41 +193,77 @@ class FramePresentation(tb.Frame):
         tb.Label(self, text="Andres Felipe Vasquez", bootstyle=f"{color}inverse", font=("Segoe UI Light", int(HEIGHTSCREEN*0.013))).place(relx=0.01, rely=0.65)
 
 class GraphFrame(tb.Frame):
-    def __init__(self, master, resultados=None, color=None, **options):
-
-        self.resultados = resultados
-        self.color = color
-        self.options = options
-
+    def __init__(self, master, resultados):
         super().__init__(master=master, bootstyle="light")
 
-        self.width, self.height = WIDTHSCREEN*0.08, HEIGHTSCREEN / 110
+        self.width, self.height = WIDTHSCREEN * 0.08, HEIGHTSCREEN / 110
 
         # Crear el grafo
         self.G = nx.Graph()
 
+        self.resultados = resultados
         lista_barrios = []
-        pos = []
-        for i in CONEXIONES:
-            for j in CONEXIONES[i]:
-                if (j, i) not in lista_barrios:
+        self.dict_resultados = dict.fromkeys(self.resultados)
+        self.lista_pos = []
+        self.highlighted_edges = []
+        self.path = []
+
+        for i in self.resultados:
+            self.dict_resultados[i] = CONEXIONES[i]
+            self.lista_pos.append(TUPLA_POS[TUPLA_CONEXIONES.index(i)])
+            for j in self.dict_resultados[i]:
+                if j in self.resultados and (j, i) not in lista_barrios:
                     lista_barrios.append((i, j))
+        
         self.G.add_edges_from(lista_barrios)
 
-        pos = dict(zip(tuple(CONEXIONES.keys()), TUPLA_POS))
+        # Crear el diccionario de posiciones solo para los nodos en self.resultados
+        self.pos = dict(zip(self.resultados, self.lista_pos))
 
         # Crear la figura y el eje
-        self.fig, self.ax = plt.subplots(figsize=(WIDTHSCREEN*0.007682, HEIGHTSCREEN*0.00737))
-
+        self.fig, self.ax = plt.subplots(figsize=(WIDTHSCREEN * 0.007682, HEIGHTSCREEN * 0.00737))
         self.fig.set_size_inches(self.width, self.height)
 
-        # Dibujar el grafo
-        nx.draw(self.G, pos, with_labels=False, ax=self.ax, node_size=int((HEIGHTSCREEN*0.64815)), node_color='lightblue')
-        nx.draw_networkx_labels(self.G, pos, ax=self.ax, font_size=int(WIDTHSCREEN*0.0052084), font_family='Segoe UI')
+        # Asegurarse de que los nodos del grafo tengan posiciones definidas
+        nx.draw(self.G, self.pos, with_labels=False, ax=self.ax, node_size=int((HEIGHTSCREEN * 0.64815)), node_color='#9ce1ff', width=2, edge_color="grey")
+
+        # Agregar etiquetas solo si están presentes en el grafo
+        labels = {node: node for node in self.G.nodes() if node in self.pos}
+        nx.draw_networkx_labels(self.G, self.pos, labels=labels, ax=self.ax, font_size=int(WIDTHSCREEN * 0.0052084), font_family='Segoe UI', font_color="red", font_weight='bold')
 
         # Crear el canvas para mostrar la figura
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.get_tk_widget().pack()
+
+    def highlight_path(self, path, color='lightgreen'):
+
+        self.path = path
+
+        self.clear_highlight()
+
+        # Resaltar nodos de la ruta
+        nx.draw_networkx_nodes(self.G, self.pos, nodelist=path, ax=self.ax, node_color=color, node_size=int((HEIGHTSCREEN * 0.64815)))
+
+        # Crear las aristas de la ruta en forma de lista de tuplas
+        edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
+
+        # Resaltar las aristas de la ruta
+        nx.draw_networkx_edges(self.G, self.pos, edgelist=edges, ax=self.ax, edge_color=color, width=2)
+
+        self.highlighted_edges = edges
+
+        # Actualizar el canvas para reflejar los cambios
+        self.canvas.draw()
+
+    def clear_highlight(self):
+        """Limpiar cualquier ruta resaltada."""
+        if self.highlighted_edges:
+
+            nx.draw_networkx_nodes(self.G, self.pos, nodelist=self.path, ax=self.ax, node_color="#9ce1ff", node_size=int((HEIGHTSCREEN * 0.64815)))
+            # Redibujar las aristas con su estilo original
+            nx.draw_networkx_edges(self.G, self.pos, edgelist=self.highlighted_edges, ax=self.ax, edge_color='grey', width=2)
+            self.highlighted_edges = []  # Vaciar la lista de aristas resaltadas
+            self.canvas.draw()
 
 class GraphicFrame(tb.Frame):
     def __init__(self, master):
@@ -235,12 +273,20 @@ class GraphicFrame(tb.Frame):
         self.graphic = tb.Frame(self, bootstyle="secondary")
         self.graphic.pack(padx=int(WIDTHSCREEN*0.02), pady=int(HEIGHTSCREEN*0.04), fill="both", expand=True)
 
-        self.graph_frame = GraphFrame(self.graphic)
+        self.graph_frame = GraphFrame(self.graphic, tuple(CONEXIONES))
         self.graph_frame.pack(fill="both", expand=True)
-    
-    def clear_graph(self):
+
+    def replaceGraph(self, results):
+        # Destruir el frame del gráfico anterior
         self.graph_frame.destroy()
 
+        # Crear un nuevo gráfico con los resultados proporcionados
+        self.graph_frame = GraphFrame(self.graphic, results)
+        self.graph_frame.pack(fill="both", expand=True)
+
+        # Actualizar el canvas para asegurarse de que el gráfico se muestre
+        self.graph_frame.canvas.draw()
+        
 class XSlidePanel(tb.Frame):
     def __init__(self, parent, start_pos, end_pos):
         super().__init__(master=parent, bootstyle="light")
@@ -525,7 +571,7 @@ def search():
             result = searchDSF(b1, b2, CONEXIONES)
         main.resultados.results_label.config(text='->'.join(result))
         main.resultados.resultados.config(state="enabled")
-        drawGraph()
+        main.grafo.graph_frame.highlight_path(result)
     
     res_busqueda = result
 
@@ -538,14 +584,13 @@ def clear():
     main.resultados.cost_label.config(text="")
     main.resultados.cost.config(text="")
     main.resultados.resultados.config(state="disabled")
+    main.grafo.graph_frame.clear_highlight()
     
 
 def close():
     plt.close("all")
     main.destroy()
-
-def drawGraph():
-    main.grafo.clear_graph()
+    
 
 main = App("lumen", "dark")
     
