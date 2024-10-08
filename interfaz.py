@@ -1,4 +1,3 @@
-from tkinter import *
 from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import ttkbootstrap as tb
@@ -8,8 +7,11 @@ from bfs_method import searchBFS
 from dfs_method import searchDFS
 from ucs_method import searchUCS
 from dsf_method import searchDSF
+from UCSInf_method import searchUCSInf
+from Dijkstra_method import searchDijkstra
+from Hill_Climbing_method import searchHillClimbing
 
-SEARCHES = ("amplitud", "profundidad", "coste uniforme", "profundidad iterativa")
+SEARCHES = ("amplitud", "profundidad", "coste uniforme", "profundidad iterativa", "coste uniforme informado", "Dijkstra", "Hill Climbing")
 
 CONEXIONES = {
     'Rincón del bosque': {'Villa Martha': 2500},
@@ -70,6 +72,65 @@ CONEXIONES = {
 
 TUPLA_CONEXIONES = tuple(CONEXIONES)
 
+TUPLA_COORD = (
+    (4.44788, -75.17431),  # Rincón del bosque
+    (4.44590, -75.1727),   # Villa Martha
+    (4.44364, -75.16488),  # Santa Ana
+    (4.44698, -75.16572),  # Pacande
+    (4.44775, -75.16489),  # Reservas de Cantabria
+    (4.44863, -75.16461),  # La cabaña
+    (4.44939, -75.1461),   # Diana Milady
+    (4.44966, -75.16425),  # Rosales de Tailandia
+    (4.44932, -75.16349),  # San Luis Gonzaga
+    (4.45128, -75.16159),  # Cantabria
+    (4.45106, -75.16258),  # Praderas del norte
+    (4.45400, -75.16758),  # Tierra firme
+    (4.45132, -75.16160),  # Mirador de Cantabria
+    (4.45154, -75.14440),  # Bella Suiza
+    (4.44711, -75.16204),  # Floresta
+    (4.44721, -75.16094),  # Villa Cindy
+    (4.44752, -75.16031),  # Villa Rocio
+    (4.44917, -75.16008),  # San Pablo
+    (4.44906, -75.15904),  # La Candelaria
+    (4.44626, -75.15928),  # Jardin de los Abuelos
+    (4.44849, -75.15698),  # Villa Marin
+    (4.44945, -75.15587),  # Montecarlo 2
+    (4.45154, -75.15602),  # Fuentes del salado
+    (4.44916, -75.15321),  # San Tropel
+    (4.44906, -75.15236),  # San Sebastian
+    (4.44686, -75.15197),  # Villa zulay
+    (4.44605, -75.15352),  # Fuente real
+    (4.44625, -75.15473),  # Nueva Bilbao
+    (4.44789, -75.15040),  # Portales del norte
+    (4.44992, -75.14796),  # Montecarlo
+    (4.45300, -75.14823),  # Palma del Rio
+    (4.45061, -75.14506),  # La victoria
+    (4.45162, -75.14439),  # Ambikaima
+    (4.45058, -75.14496),  # El salado
+    (4.44781, -75.14474),  # Los lagos
+    (4.44757, -75.14545),  # San Isidro Labrador
+    (4.44713, -75.14788),  # La ceiba norte
+    (4.45090, -75.14063),  # Villa Clara
+    (4.44974, -75.13988),  # Comfatolima
+    (4.45511, -75.13500),  # Villa Camila
+    (4.45237, -75.13544),  # Chico
+    (4.45072, -75.13765),  # Territorio de paz
+    (4.45137, -75.13357),  # Modelia 1
+    (4.44950, -75.13653),  # Modelia 2
+    (4.45408, -75.13465),  # Villa Salome
+    (4.45465, -75.13454),  # El Dorado
+    (4.45513, -75.13500),  # Timaka
+    (4.45598, -75.1336),   # Lady di
+    (4.45450, -75.13307),  # El Recreo
+    (4.45571, -75.13232),  # Alamos
+    (4.45397, -75.13140),  # Protecho
+    (4.45421, -75.13039),  # Santa Catalina
+    (4.45304, -75.12748),  # La Ceibita
+    (4.45458, -75.12482)   # El Pais
+)
+
+DICT_COORD = dict_pos = dict(zip(CONEXIONES.keys(), TUPLA_COORD))
+
 TUPLA_POS = ((0.1, 0.8),
              (0.15, 0.7),
              (0.23, 0.6),
@@ -125,8 +186,6 @@ TUPLA_POS = ((0.1, 0.8),
              (0.95, 0.14),
              (1, 0.05)
 )
-
-res_busqueda = []
 
 class App(tb.Window):
     def __init__(self, theme, color):
@@ -231,16 +290,15 @@ class GraphFrame(tb.Frame):
         labels = {node: node for node in self.G.nodes() if node in self.pos}
         nx.draw_networkx_labels(self.G, self.pos, labels=labels, ax=self.ax, font_size=int(WIDTHSCREEN * 0.0052084), font_family='Segoe UI', font_color="red", font_weight='bold')
 
+        self.ax.set_title('Búsqueda de rutas - Comuna 7', fontsize=int(HEIGHTSCREEN*0.017), fontweight='bold')
+
         # Crear el canvas para mostrar la figura
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.get_tk_widget().pack()
 
-    def highlight_path(self, path, color='lightgreen'):
-
-        self.path = path
+    def highlight_path(self, path, color='#fffb00'):
 
         self.clear_highlight()
-
         # Resaltar nodos de la ruta
         nx.draw_networkx_nodes(self.G, self.pos, nodelist=path, ax=self.ax, node_color=color, node_size=int((HEIGHTSCREEN * 0.64815)))
 
@@ -251,6 +309,8 @@ class GraphFrame(tb.Frame):
         nx.draw_networkx_edges(self.G, self.pos, edgelist=edges, ax=self.ax, edge_color=color, width=2)
 
         self.highlighted_edges = edges
+        self.path = path
+        
 
         # Actualizar el canvas para reflejar los cambios
         self.canvas.draw()
@@ -263,6 +323,7 @@ class GraphFrame(tb.Frame):
             # Redibujar las aristas con su estilo original
             nx.draw_networkx_edges(self.G, self.pos, edgelist=self.highlighted_edges, ax=self.ax, edge_color='grey', width=2)
             self.highlighted_edges = []  # Vaciar la lista de aristas resaltadas
+            self.path = []
             self.canvas.draw()
 
 class GraphicFrame(tb.Frame):
@@ -331,20 +392,20 @@ class Results(XSlidePanel):
         button_style.configure("primary.TButton", font=("Segoe UI Light", int(WIDTHSCREEN*0.00625)))
 
         self.resultados = tb.Button(self, bootstyle="primary", style="primary_TButton", text="Resultados", state="disabled", command=self.animate)
-        self.resultados.pack(fill=X)
+        self.resultados.pack(fill="x")
 
         self.results_title = tb.Label(self, bootstyle="lightinverse", font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
-        self.results_title.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.014))
+        self.results_title.pack(anchor="nw", padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.014))
 
-        self.results_label = tb.Label(self, bootstyle="lightinverse", wraplength=WIDTHSCREEN*0.52,font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
-        self.results_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), fill=BOTH)
+        self.results_label = tb.Label(self, bootstyle="lightinverse", wraplength=WIDTHSCREEN*0.55,font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
+        self.results_label.pack(anchor="nw", padx=(int(WIDTHSCREEN)*0.008, 0), fill="both")
 
         self.cost_label = tb.Label(self, bootstyle="lightinverse", font=("Segoe UI Light", int(WIDTHSCREEN*0.01)))
-        self.cost_label.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.015))
+        self.cost_label.pack(anchor="nw", padx=(int(WIDTHSCREEN)*0.008, 0), pady=int(HEIGHTSCREEN*0.015))
         self.cost = tb.Label(self,bootstyle="lightinverse", font=("Segoe UI Light", int(WIDTHSCREEN*0.008)))
-        self.cost.pack(anchor=NW, padx=(int(WIDTHSCREEN)*0.008, 0))
+        self.cost.pack(anchor="nw", padx=(int(WIDTHSCREEN)*0.008, 0))
 
-class YSlidePanel(Frame):
+class YSlidePanel(tb.Frame):
     def __init__(self, parent, start_pos, end_pos):
         super().__init__(master=parent)
 
@@ -384,10 +445,10 @@ class MenuPanel(YSlidePanel):
         super().__init__(parent=master, start_pos=start_pos, end_pos=end_pos)
 
         self.frame1 = tb.Frame(self, bootstyle="light")
-        self.frame1.pack(fill=Y, side="left")
+        self.frame1.pack(fill="y", side="left")
 
         self.slide_menu = tb.Button(self.frame1, text="O\np\nc\ni\no\nn\ne\ns", bootstyle="success", width=int(WIDTHSCREEN*0.00156), command=self.animate)
-        self.slide_menu.pack(side="left", fill=Y, pady=int(HEIGHTSCREEN*0.04))
+        self.slide_menu.pack(side="left", fill="y", pady=int(HEIGHTSCREEN*0.04))
 
         self.menu = Menu(self)
         self.menu.pack(fill="both", expand=True, side="right")
@@ -399,7 +460,7 @@ class Menu(tb.Frame):
 
         self.icon_size = int(WIDTHSCREEN * 0.03)
 
-        IconButton(self, bootstyle="danger", path="./images/close.png", width=self.icon_size, height=self.icon_size, command=close).pack(padx=20, pady=20, anchor=NE)
+        IconButton(self, bootstyle="danger", path="./images/close.png", width=self.icon_size, height=self.icon_size, command=close).pack(padx=20, pady=20, anchor="ne")
 
         SectionTitle(self, title="Seleccion de Ruta")
 
@@ -443,9 +504,9 @@ class SectionTitle(tb.Frame):
 
         tb.Label(self, text=title, font=("Segoe UI Light", int(WIDTHSCREEN*0.01)), bootstyle="darkinverse").pack(pady=int(HEIGHTSCREEN*0.018))
 
-        tb.Separator(self, bootstyle="light", orient="horizontal").pack(fill=X, padx=int(WIDTHSCREEN*0.04), pady= int(HEIGHTSCREEN*0.018))
+        tb.Separator(self, bootstyle="light", orient="horizontal").pack(fill="x", padx=int(WIDTHSCREEN*0.04), pady= int(HEIGHTSCREEN*0.018))
 
-        self.pack(fill=X, padx=int(WIDTHSCREEN*0.04), pady=int(HEIGHTSCREEN*0.018))
+        self.pack(fill="x", padx=int(WIDTHSCREEN*0.04), pady=int(HEIGHTSCREEN*0.018))
 
 class RouteSelector(tb.Frame):
     def __init__(self, master):
@@ -495,7 +556,7 @@ class RouteSelector(tb.Frame):
         self.barrio2.config(values=self.barrios)
 
     def inBlank(self):
-        if ((self.barrio1.get() != "") and (self.barrio2.get() != "")):
+        if ((self.barrio1.get() != "") or (self.barrio2.get() != "")):
             self.in_blank = False
         
         return self.in_blank
@@ -521,7 +582,7 @@ class SearchMethod(tb.Frame):
 
         self.lensearches = len(SEARCHES)
         
-        self.search = StringVar()
+        self.search = tb.StringVar()
 
         self.radio_size = int(WIDTHSCREEN * 0.025)
 
@@ -533,7 +594,7 @@ class SearchMethod(tb.Frame):
                 radio.pack(pady=int(HEIGHTSCREEN*(0.08/self.lensearches)))
                 
         
-        self.pack(fill=BOTH, pady=int(HEIGHTSCREEN*0.01))
+        self.pack(fill="both", pady=int(HEIGHTSCREEN*0.01))
 
     def inBlank(self):
         if (self.search.get() != ""):
@@ -547,33 +608,45 @@ class SearchMethod(tb.Frame):
 
 def search():
 
-    global res_busqueda
+    result = None
 
-    if (not(main.panel_menu.menu.route.inBlank()) and not(main.panel_menu.menu.search_meth.inBlank())):
-
-        b1 = main.panel_menu.menu.route.barrio1.get()
-        b2 = main.panel_menu.menu.route.barrio2.get()
-
+    if (main.panel_menu.menu.search_meth.search.get() != ''):
         main.resultados.cost_label.config(text="")
         main.resultados.cost.config(text="")
         main.resultados.results_title.config(text="Ruta:")
+
+    if (main.panel_menu.menu.search_meth.search.get() == SEARCHES[6]):
+            result = searchHillClimbing(DICT_COORD)
+
+    if (not(main.panel_menu.menu.route.inBlank())):
+
+        b1 = main.panel_menu.menu.route.barrio1.get()
+        b2 = main.panel_menu.menu.route.barrio2.get()
 
         if (main.panel_menu.menu.search_meth.search.get() == SEARCHES[0]):
             result = searchBFS(b1, b2, CONEXIONES)
         elif (main.panel_menu.menu.search_meth.search.get() == SEARCHES[1]):
             result = searchDFS(b1, b2, CONEXIONES)
         elif (main.panel_menu.menu.search_meth.search.get() == SEARCHES[2]):
-            resultados = searchUCS(b1, b2, CONEXIONES)
-            result = resultados[0]
-            main.resultados.cost_label.config(text="Coste:")
-            main.resultados.cost.config(text=f"{resultados[1]} m")
-        else:
+            result = searchUCS(b1, b2, CONEXIONES)
+        elif (main.panel_menu.menu.search_meth.search.get() == SEARCHES[3]):
             result = searchDSF(b1, b2, CONEXIONES)
+        elif (main.panel_menu.menu.search_meth.search.get() == SEARCHES[4]):
+            result = searchUCSInf(b1, b2, CONEXIONES, DICT_COORD)
+        elif (main.panel_menu.menu.search_meth.search.get() == SEARCHES[5]):
+            result = searchDijkstra(b1, b2, CONEXIONES)
+    
+    if (result is not None):
+        if len(result) == 2:
+            main.resultados.cost_label.config(text="Coste:")
+            main.resultados.cost.config(text=f"{result[1]} m")
+            result = result[0]
+
         main.resultados.results_label.config(text='->'.join(result))
         main.resultados.resultados.config(state="enabled")
-        main.grafo.graph_frame.highlight_path(result)
+        if (main.panel_menu.menu.search_meth.search.get() != SEARCHES[6]):
+            main.grafo.graph_frame.highlight_path(result)
     
-    res_busqueda = result
 
 def clear():
     if (not(main.panel_menu.menu.route.inBlank()) or not(main.panel_menu.menu.search_meth.inBlank())):
