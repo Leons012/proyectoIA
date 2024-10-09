@@ -14,7 +14,7 @@ Created on Sun Aug 23 14:49:27 2020
 """
 
 # Busqueda en Profundidad - Depth First Search vuelos
-from Tree_Ok import Node
+from methods.Tree_Ok import Node
 
 def search_DSF_prof_iter(start_node, solution, connections):
     for limit in range(0, 100):

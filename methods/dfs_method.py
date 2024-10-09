@@ -1,4 +1,4 @@
-from Tree_Ok import Node
+from methods.Tree_Ok import Node
 
 # Función para construir los nodos a partir del diccionario
 def construir_nodos(conexiones):

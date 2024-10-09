@@ -4,8 +4,8 @@ Created on Mon Aug 17 09:51:04 2020
 
 @author: ferna
 """
-# Vuelos con búsqueda en amplitud 
-from arbol import Nodo 
+# Vuelos con búsqueda en amplitud
+from methods.arbol import Nodo 
 def buscar_solucion_BFS(conexiones, estado_inicial, solucion):
     solucionado=False
     nodos_visitados=[]

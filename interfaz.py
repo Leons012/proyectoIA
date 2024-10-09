@@ -3,13 +3,13 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import ttkbootstrap as tb
 import networkx as nx
 import matplotlib.pyplot as plt
-from bfs_method import searchBFS
-from dfs_method import searchDFS
-from ucs_method import searchUCS
-from dsf_method import searchDSF
-from UCSInf_method import searchUCSInf
-from Dijkstra_method import searchDijkstra
-from Hill_Climbing_method import searchHillClimbing
+from methods.bfs_method import searchBFS
+from methods.dfs_method import searchDFS
+from methods.ucs_method import searchUCS
+from methods.dsf_method import searchDSF
+from methods.UCSInf_method import searchUCSInf
+from methods.Dijkstra_method import searchDijkstra
+from methods.Hill_Climbing_method import searchHillClimbing
 
 SEARCHES = ("amplitud", "profundidad", "coste uniforme", "profundidad iterativa", "coste uniforme informado", "Dijkstra", "Hill Climbing")
 

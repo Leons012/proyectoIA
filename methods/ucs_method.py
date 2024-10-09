@@ -1,5 +1,5 @@
 # Busqueda con Coste Uniforme - Uniform Cost Search
-from Tree_Ok import Node
+from methods.Tree_Ok import Node
 
 def Compare(node):
    return node.get_cost()
